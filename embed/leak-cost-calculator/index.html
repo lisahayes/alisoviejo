@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#3F6212">
+<meta name="msapplication-TileColor" content="#3F6212">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leak Cost Calculator | Aliso Viejo Leak Repair Pros</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Manrope',system-ui,sans-serif;color:#1F1F1F;background:transparent;padding:16px}
+:root{--sage:#3F6212;--sage-light:#F7F9F4;--sage-mid:#BCCFAB;--sandstone:#C2845A;--sandstone-dk:#8A5030;--gray-100:#F5F5F5;--gray-200:#E8E8E8;--gray-400:#9A9A9A;--gray-600:#5A5A5A;--white:#FFFFFF}
+h2{font-size:16px;color:var(--sage);margin-bottom:14px}
+.input-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px}
+.input-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:130px}
+.input-group label{font-size:12px;font-weight:600;color:var(--gray-600)}
+.input-group input,.input-group select{border:1.5px solid var(--gray-200);border-radius:6px;padding:9px 11px;font-family:inherit;font-size:14px;color:#1F1F1F;background:var(--white)}
+.input-group input:focus,.input-group select:focus{outline:2px solid var(--sage);outline-offset:1px}
+.btn-type{border:1.5px solid var(--gray-200);background:var(--white);border-radius:7px;padding:10px 14px;font-family:inherit;font-size:13px;cursor:pointer;transition:all .15s;color:#1F1F1F;flex:1;min-width:110px}
+.btn-type.active{background:var(--sage);border-color:var(--sage);color:var(--white)}
+.type-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.toggle-row{display:flex;align-items:center;gap:12px;margin:12px 0;padding:12px;background:var(--gray-100);border-radius:7px}
+.toggle-switch{position:relative;width:40px;height:22px;background:var(--gray-200);border-radius:11px;cursor:pointer;border:none;flex-shrink:0;transition:background .2s}
+.toggle-switch.on{background:var(--sage)}
+.toggle-knob{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--white);transition:left .2s}
+.toggle-switch.on .toggle-knob{left:21px}
+.result-block{background:var(--sage-light);border-left:4px solid var(--sage);border-radius:0 7px 7px 0;padding:16px 18px;margin:16px 0;display:none}
+.result-block.show{display:block}
+.result-big{font-size:32px;font-weight:700;color:var(--sage);margin:0 0 2px}
+.result-unit{font-size:13px;color:var(--gray-600);margin-bottom:10px}
+.result-rows{display:flex;flex-wrap:wrap;gap:10px 18px;margin-bottom:12px}
+.result-stat{min-width:100px}
+.result-stat__label{font-size:11px;color:var(--gray-600)}
+.result-stat__val{font-size:16px;font-weight:700;color:#2B4509}
+.result-note{font-size:12px;color:var(--gray-600);margin-top:10px;border-top:1px solid var(--gray-200);padding-top:10px}
+.result-note a{color:var(--sage)}
+.cta-btn{display:inline-flex;align-items:center;gap:8px;background:var(--sandstone);color:var(--white);padding:12px 22px;border-radius:7px;font-size:15px;font-weight:700;text-decoration:none;margin-top:14px;transition:background .15s}
+.cta-btn:hover{background:var(--sandstone-dk)}
+.powered{font-size:12px;color:var(--gray-400);text-align:center;margin-top:16px;padding-top:12px;border-top:1px solid var(--gray-200)}
+.powered a{color:var(--gray-600)}
+</style>
+<script>
+var MNWD_T1=2.76,MNWD_T2=3.34,MNWD_T3=4.75,WHOLESALE=0.14;
+var leakType="drip",overBudget=false;
+function setLeakType(t){
+  leakType=t;
+  document.querySelectorAll(".btn-type").forEach(function(b){b.classList.remove("active")});
+  document.getElementById("btn-"+t).classList.add("active");
+  document.getElementById("grp-drips").style.display=(t==="drip")?"":"none";
+  document.getElementById("grp-toilet").style.display=(t==="toilet")?"":"none";
+  document.getElementById("grp-trickle").style.display=(t==="trickle")?"":"none";
+  document.getElementById("grp-sprinkler").style.display=(t==="sprinkler")?"":"none";
+  document.getElementById("irrig-note").style.display=(t==="sprinkler")?"":"none";
+  calcCost();
+}
+function setDrips(v){document.getElementById("drips").value=v;document.querySelectorAll(".drip-btn").forEach(function(b){b.classList.remove("active")});event.target.classList.add("active");calcCost();}
+function toggleBudget(){
+  overBudget=!overBudget;
+  var sw=document.getElementById("budget-toggle");
+  sw.classList.toggle("on",overBudget);
+  sw.querySelector(".toggle-knob").style.left=overBudget?"21px":"3px";
+  document.getElementById("toggle-lbl").textContent=overBudget?"Yes, near or over MNWD budget":"No, within MNWD water budget";
+  calcCost();
+}
+function fmt(n,d){return n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d})}
+function calcCost(){
+  var count=parseFloat(document.getElementById("fixture-count").value)||1;
+  var gpd=0,isOutdoor=false,label="";
+  if(leakType==="drip"){var dpm=parseFloat(document.getElementById("drips").value)||0;gpd=(dpm*60*24)/15140;label="dripping faucet ("+dpm+" drips/min)";}
+  else if(leakType==="toilet"){gpd=parseFloat(document.getElementById("toilet-gpd").value)||480;label="running toilet";}
+  else if(leakType==="trickle"){var gph=parseFloat(document.getElementById("trickle-gph").value)||0;gpd=gph*24;label="trickle ("+gph+" gal/hr)";}
+  else if(leakType==="sprinkler"){var sgph=parseFloat(document.getElementById("sprinkler-gph").value)||60;gpd=sgph*24;label="sprinkler ("+sgph+" gal/hr)";isOutdoor=true;}
+  gpd*=count;
+  if(gpd<=0){document.getElementById("cost-result").className="result-block";return;}
+  var pm=gpd*30.44,py=gpd*365,hcf=pm/748;
+  var rate=(overBudget?MNWD_T2:MNWD_T1)+WHOLESALE;
+  var cm=hcf*rate,cy=cm*12,tubs=Math.round(py/60);
+  var ovNote=overBudget?"<p class='result-note'>Using Tier 2 rate. Tier 3 applies at $"+fmt(MNWD_T3,2)+"/HCF for larger over-budget amounts.</p>":"";
+  var wwNote=isOutdoor?"<p class='result-note'>Outdoor leaks: only water cost applies. MNWD wastewater is household-size based.</p>":"<p class='result-note'>MNWD wastewater is based on household size. This leak does not raise your wastewater bill.</p>";
+  var res=document.getElementById("cost-result");
+  res.className="result-block show";
+  res.innerHTML="<p style='font-size:13px;color:var(--gray-600);margin-bottom:12px'>Cost of "+count+" "+label+(count>1?"(s)":"")+" at MNWD "+(overBudget?"Tier 2":"Tier 1")+"</p>"
+    +"<div class='result-big'>$"+fmt(cm,2)+"<span style='font-size:16px'>/mo</span></div>"
+    +"<div class='result-unit'>added to your MNWD water bill</div>"
+    +"<div class='result-rows'>"
+    +"<div class='result-stat'><div class='result-stat__label'>Gallons/month</div><div class='result-stat__val'>"+fmt(pm,0)+"</div></div>"
+    +"<div class='result-stat'><div class='result-stat__label'>Annual water cost</div><div class='result-stat__val'>$"+fmt(cy,2)+"</div></div>"
+    +"<div class='result-stat'><div class='result-stat__label'>Bathtubs wasted/yr</div><div class='result-stat__val'>"+tubs+"</div></div>"
+    +"</div>"
+    +ovNote+wwNote
+    +"<p class='result-note'>After repair, check MNWD Bill Adjustment at <a href='https://www.mnwd.com/adjustments/' target='_blank' rel='noopener'>mnwd.com/adjustments/</a></p>"
+    +"<a href='tel:+19493253122' class='cta-btn'><svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12 19.79 19.79 0 0 1 1 3.24a2 2 0 0 1 2-2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 5.45 5.45l1.23-1.23a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z'/></svg>(949) 325-3122</a>";
+}
+window.addEventListener("DOMContentLoaded",function(){setLeakType("drip");calcCost();});
+</script>
+</head>
+<body>
+<h2>Leak Cost Calculator (Aliso Viejo &middot; MNWD Rates)</h2>
+<div class="type-row">
+  <button class="btn-type active" id="btn-drip" onclick="setLeakType('drip')">Dripping faucet</button>
+  <button class="btn-type" id="btn-toilet" onclick="setLeakType('toilet')">Running toilet</button>
+  <button class="btn-type" id="btn-trickle" onclick="setLeakType('trickle')">Trickle/stream</button>
+  <button class="btn-type" id="btn-sprinkler" onclick="setLeakType('sprinkler')">Sprinkler</button>
+</div>
+<div id="grp-drips">
+  <div class="type-row">
+    <button class="btn-type drip-btn" onclick="setDrips(10)">Slow (10/min)</button>
+    <button class="btn-type drip-btn active" onclick="setDrips(60)">Steady (60/min)</button>
+    <button class="btn-type drip-btn" onclick="setDrips(120)">Fast (120/min)</button>
+  </div>
+  <div class="input-row">
+    <div class="input-group"><label for="drips">Or drips per minute</label><input type="number" id="drips" value="60" min="1" oninput="calcCost()"></div>
+  </div>
+</div>
+<div id="grp-toilet" style="display:none">
+  <div class="input-row"><div class="input-group"><label for="toilet-gpd">Gallons per day (default 480)</label><input type="number" id="toilet-gpd" value="480" min="1" oninput="calcCost()"></div></div>
+</div>
+<div id="grp-trickle" style="display:none">
+  <div class="input-row"><div class="input-group"><label for="trickle-gph">Gallons per hour</label><input type="number" id="trickle-gph" value="2" min="0.1" step="0.1" oninput="calcCost()"></div></div>
+</div>
+<div id="grp-sprinkler" style="display:none">
+  <div class="input-row"><div class="input-group"><label for="sprinkler-gph">Gallons per hour</label><input type="number" id="sprinkler-gph" value="60" min="1" oninput="calcCost()"></div></div>
+</div>
+<div id="irrig-note" style="display:none;font-size:12px;color:var(--gray-600);margin-bottom:10px;padding:8px;background:var(--gray-100);border-radius:5px">Outdoor leak: only water cost applies.</div>
+<div class="input-row">
+  <div class="input-group"><label for="fixture-count">Number of fixtures</label><input type="number" id="fixture-count" value="1" min="1" max="20" oninput="calcCost()"></div>
+</div>
+<div class="toggle-row">
+  <button class="toggle-switch" id="budget-toggle" onclick="toggleBudget()" aria-label="Over budget toggle"><div class="toggle-knob"></div></button>
+  <span style="font-size:13px;color:var(--gray-600)" id="toggle-lbl">No, within MNWD water budget</span>
+</div>
+<div id="cost-result" class="result-block"></div>
+<div class="powered">Powered by <a href="https://alisoviejoleakrepairpros.com" target="_blank" rel="dofollow">Aliso Viejo Leak Repair Pros</a></div>
+</body>
+</html>

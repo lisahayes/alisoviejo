@@ -1,0 +1,23 @@
+{
+  "name": "Aliso Viejo Leak Repair Pros",
+  "short_name": "AV Leak Pros",
+  "description": "Leak detection and repair in Aliso Viejo, CA. Call (949) 325-3122.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#2B4509",
+  "theme_color": "#3F6212",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
